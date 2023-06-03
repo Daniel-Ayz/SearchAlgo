@@ -1,12 +1,12 @@
 import pygame
 
 from Astar import make_grid, Spot, run_algo_from_grid, manhattan, euclidean
-from maze_generator import random_maze_generator
+from maze_generator import generate_wilson_maze, generate_eller_maze, random_maze_generator, generate_maze_prim, generate_maze_backtracking, generate_maze_kruskal, generate_maze_kruskal2, generate_maze_backtracking2
 
-SIZE = 50
+SIZE = 51
 WIDTH = 10 * SIZE
-START = (0, 0)
-END = (SIZE-1, SIZE-1)
+START = (1, 1)
+END = (SIZE-3, SIZE-3)
 
 
 def print_gen_maze(maze):
@@ -33,14 +33,40 @@ def run_algo(grid):
 
 
 def main():
-    maze = random_maze_generator(SIZE, SIZE, START, END)
-    grid1 = convert_maze_to_grid(maze)
-    grid2 = convert_maze_to_grid(maze)
-    win = pygame.display.set_mode((WIDTH, WIDTH))
-    run_algo_from_grid(win, grid1, manhattan, SIZE, WIDTH, grid1[START[0]][START[1]], grid1[END[0]][END[1]])
+    # maze_rand = random_maze_generator(SIZE, SIZE, START, END)
+    maze_prim = generate_maze_prim(SIZE, SIZE, START, END)
+    # maze_backtracking = maze_generator.generate_maze_backtracking(SIZE, SIZE, START, END)
+    # maze_kruskal = maze_generator.generate_maze_kruskal(SIZE, SIZE, START, END)
+    # maze_eller = generate_eller_maze(SIZE, SIZE, START, END)
+    # print_gen_maze(maze_eller)
+    # maze_wilson = maze_generator.generate_wilson_maze(SIZE, SIZE, START, END)
 
+
+    # grid_rand = convert_maze_to_grid(maze_rand)
+    grid_prim = convert_maze_to_grid(maze_prim)
+    # grid_backtracking = convert_maze_to_grid(maze_backtracking)
+    # grid_kruskal = convert_maze_to_grid(maze_kruskal)
+    # grid_eller = convert_maze_to_grid(maze_eller)
+    # grid_wilson = convert_maze_to_grid(maze_wilson)
+
+
+    # win = pygame.display.set_mode((WIDTH, WIDTH))
+    # run_algo_from_grid(win, grid_rand, euclidean, SIZE, WIDTH, grid_rand[START[0]][START[1]], grid_rand[END[0]][END[1]])
+    #
     win = pygame.display.set_mode((WIDTH, WIDTH))
-    run_algo_from_grid(win, grid2, euclidean, SIZE, WIDTH, grid2[START[0]][START[1]], grid2[END[0]][END[1]])
+    run_algo_from_grid(win, grid_prim, euclidean, SIZE, WIDTH, grid_prim[START[0]][START[1]], grid_prim[END[0]][END[1]])
+    #
+    # win = pygame.display.set_mode((WIDTH, WIDTH))
+    # run_algo_from_grid(win, grid_backtracking, euclidean, SIZE, WIDTH, grid_backtracking[START[0]][START[1]], grid_backtracking[END[0]][END[1]])
+    #
+    # win = pygame.display.set_mode((WIDTH, WIDTH))
+    # run_algo_from_grid(win, grid_kruskal, euclidean, SIZE, WIDTH, grid_kruskal[START[0]][START[1]], grid_kruskal[END[0]][END[1]])
+
+    # win = pygame.display.set_mode((WIDTH, WIDTH))
+    # run_algo_from_grid(win, grid_eller, euclidean, SIZE, WIDTH, grid_eller[START[0]][START[1]], grid_eller[END[0]][END[1]])
+
+    # win = pygame.display.set_mode((WIDTH, WIDTH))
+    # run_algo_from_grid(win, grid_wilson, euclidean, SIZE, WIDTH, grid_wilson[START[0]][START[1]], grid_wilson[END[0]][END[1]])
 
 
 main()
