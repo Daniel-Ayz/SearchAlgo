@@ -1,7 +1,7 @@
 import pygame
 
-from Astar import make_grid, Spot, run_algo_from_grid, manhattan, euclidean
-from maze_generator import generate_wilson_maze, generate_eller_maze, random_maze_generator, generate_maze_prim, generate_maze_backtracking, generate_maze_kruskal, generate_maze_kruskal2, generate_maze_backtracking2
+from Astar import make_grid, run_algo_from_grid, euclidean
+from maze_generators.maze_generator import generate_maze_prim
 
 SIZE = 51
 WIDTH = 10 * SIZE
