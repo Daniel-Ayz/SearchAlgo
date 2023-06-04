@@ -1,7 +1,11 @@
 from random import shuffle
 
+SIZE = 51
+START = (1, 1)
+END = (SIZE-3, SIZE-3)
 
-def generate_maze_kruskal(width, height, start, end):
+
+def generate_maze_kruskal(width=SIZE, height=SIZE, start=START, end=END):
     maze = [[0] * width for _ in range(height)]  # Initialize maze with all walls (0)
     sets = [[i] for i in range(width * height)]  # Create disjoint sets for each cell
 

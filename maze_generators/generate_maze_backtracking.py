@@ -1,5 +1,11 @@
 from random import shuffle
-def generate_maze_backtracking(width, height, start, end):
+
+SIZE = 51
+START = (1, 1)
+END = (SIZE-3, SIZE-3)
+
+
+def generate_maze_backtracking(width=SIZE, height=SIZE, start=START, end=END):
     maze = [[0] * width for _ in range(height)]  # Initialize maze with all walls (0)
 
     def backtrack(x, y):
