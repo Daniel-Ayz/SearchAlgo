@@ -95,20 +95,23 @@ class Spot:
 def manhattan(p1, p2):
 	x1, y1 = p1
 	x2, y2 = p2
-	return abs(x1 - x2) + abs(y1 - y2)
+	return abs(x1 - x2) + abs(y1 - y2) * 1.001
 
 
 def euclidean(p1, p2):
 	x1, y1 = p1
 	x2, y2 = p2
-	return (x1 - x2)**2 + (y1 - y2)**2
+	return math.sqrt((x1 - x2)**2 + (y1 - y2)**2) * 1.001
 
 
 def reconstruct_path(came_from, current, draw):
+	count = 0
 	while current in came_from:
+		count += 1
 		current = came_from[current]
 		current.make_path()
 		draw()
+	print(count)
 
 
 def algorithm(draw, grid, h, start, end):
@@ -127,7 +130,8 @@ def algorithm(draw, grid, h, start, end):
 	while not open_set.empty():
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				pygame.quit()
+				pygame.event.post(pygame.event.Event(pygame.QUIT))
+				return False
 
 		current = open_set.get()[2]
 		# current = open_set.get()[1]
@@ -208,7 +212,7 @@ def validate_click(row, col, max_len):
 	return 0 <= row < max_len and 0 <= col < max_len
 
 
-def main(win, width, h=euclidean):
+def main(win, width, h=manhattan):
 	ROWS = 50
 	grid = make_grid(ROWS, width)
 
@@ -257,7 +261,23 @@ def main(win, width, h=euclidean):
 						for spot in row:
 							spot.update_neighbors(grid)
 
-					algorithm(lambda: draw(win, grid, ROWS, width), grid, h, start, end)
+					for row in grid:
+						for spot in row:
+							if not spot.is_barrier():
+								if not spot.is_start() and not spot.is_end():
+									spot.reset()
+								spot.update_neighbors(grid)
+
+					algorithm(lambda: draw(win, grid, ROWS, width), grid, manhattan, start, end)
+					time.sleep(5)
+					for row in grid:
+						for spot in row:
+							if not spot.is_barrier():
+								if not spot.is_start() and not spot.is_end():
+									spot.reset()
+								spot.update_neighbors(grid)
+
+					algorithm(lambda: draw(win, grid, ROWS, width), grid, euclidean, start, end)
 
 				if event.key == pygame.K_c:
 					start = None
@@ -278,9 +298,36 @@ def run_algo_from_grid(win, grid, h, rows, width, start, end):
 			if event.type == pygame.KEYDOWN:
 				for row in grid:
 					for spot in row:
-						spot.update_neighbors(grid)
+						if not spot.is_barrier():
+							if not spot.is_start() and not spot.is_end():
+								spot.reset()
+							spot.update_neighbors(grid)
 
-				algorithm(lambda: draw(win, grid, rows, width), grid, h, start, end)
+				for row in grid:
+					for spot in row:
+						if not spot.is_barrier():
+							if not spot.is_start() and not spot.is_end():
+								spot.reset()
+							spot.update_neighbors(grid)
+				print("manhattan")
+				start_t = time.time()
+				algorithm(lambda: draw(win, grid, rows, width), grid, manhattan, start, end)
+				end_t = time.time()
+				print("run time: ", end_t - start_t)
+				time.sleep(5)
+				for row in grid:
+					for spot in row:
+						if not spot.is_barrier():
+							if not spot.is_start() and not spot.is_end():
+								spot.reset()
+							spot.update_neighbors(grid)
+				print("euclidian")
+				start_t = time.time()
+				algorithm(lambda: draw(win, grid, rows, width), grid, euclidean, start, end)
+				end_t = time.time()
+				print("run time: ", end_t-start_t)
+
+				# algorithm(lambda: draw(win, grid, rows, width), grid, h, start, end)
 	pygame.quit()
 
 

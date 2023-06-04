@@ -44,7 +44,7 @@ class stack:
 
 
 # Function to generate the random maze
-def random_maze_generator(r, c, P0, Pf):
+def generate_maze_dfs(r, c, P0, Pf):
     ROWS, COLS = r, c
 
     # Array with only walls (where paths will
