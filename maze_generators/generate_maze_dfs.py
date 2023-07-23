@@ -1,6 +1,6 @@
 from random import randint
-from maze_tools import print_maze
-SIZE = 51
+from maze_generators.maze_tools import print_maze
+SIZE = 50
 START = (1, 1)
 END = (SIZE-3, SIZE-3)
 

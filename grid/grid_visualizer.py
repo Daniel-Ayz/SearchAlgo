@@ -1,11 +1,8 @@
 import time
-
 import pygame
-import math
-from queue import PriorityQueue
 
-WIDTH = 500
-
+ROWS = 51
+WIDTH = ROWS * 10
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 255, 0)
@@ -13,12 +10,12 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
-ORANGE = (255, 165 ,0)
+ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
-pygame.display.set_caption("A* Path Finding Algorithm")
+pygame.display.set_caption("grid visualizer")
 
 
 class Spot:
@@ -92,83 +89,7 @@ class Spot:
 		return False
 
 
-def manhattan(p1, p2):
-	x1, y1 = p1
-	x2, y2 = p2
-	return abs(x1 - x2) + abs(y1 - y2) * 1.001
-
-
-def euclidean(p1, p2):
-	x1, y1 = p1
-	x2, y2 = p2
-	return math.sqrt((x1 - x2)**2 + (y1 - y2)**2) * 1.001
-
-
-def reconstruct_path(came_from, current, draw):
-	count = 0
-	while current in came_from:
-		count += 1
-		current = came_from[current]
-		current.make_path()
-		draw()
-	print(count)
-
-
-def algorithm(draw, grid, h, start, end):
-	count = 0
-	open_set = PriorityQueue()
-	open_set.put((0, count, start))
-	# open_set.put((0, count), start)
-	came_from = {}
-	g_score = {spot: float("inf") for row in grid for spot in row}
-	g_score[start] = 0
-	f_score = {spot: float("inf") for row in grid for spot in row}
-	f_score[start] = h(start.get_pos(), end.get_pos())
-
-	open_set_hash = {start}
-
-	while not open_set.empty():
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.event.post(pygame.event.Event(pygame.QUIT))
-				return False
-
-		current = open_set.get()[2]
-		# current = open_set.get()[1]
-		open_set_hash.remove(current)
-
-		if current == end:
-			draw()
-			reconstruct_path(came_from, end, draw)
-			end.make_end()
-			start.make_start()
-			return True
-
-		for neighbor in current.neighbors:
-			if neighbor.is_closed():
-				continue
-			temp_g_score = g_score[current] + 1
-
-			if temp_g_score < g_score[neighbor]:
-				came_from[neighbor] = current
-				g_score[neighbor] = temp_g_score
-				f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos())
-				if neighbor not in open_set_hash:
-					count += 1
-					open_set.put((f_score[neighbor], count, neighbor))
-					# open_set.put((f_score[neighbor], count), neighbor)
-					open_set_hash.add(neighbor)
-					neighbor.make_open()
-
-		draw()
-
-		if current != start:
-			current.make_closed()
-
-	return False
-
-
-def make_grid(rows, width):
+def make_grid(rows=ROWS, width=WIDTH):
 	grid = []
 	gap = width // rows
 	for i in range(rows):
@@ -179,7 +100,7 @@ def make_grid(rows, width):
 	return grid
 
 
-def draw_grid(win, rows, width):
+def draw_grid_pygame(win=WIN, rows=ROWS, width=WIDTH):
 	gap = width // rows
 	for i in range(rows):
 		pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
@@ -187,18 +108,16 @@ def draw_grid(win, rows, width):
 			pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 
-def draw(win, grid, rows, width):
+def draw(grid, win=WIN, rows=ROWS, width=WIDTH):
 	win.fill(WHITE)
-
 	for row in grid:
 		for spot in row:
 			spot.draw(win)
-
-	draw_grid(win, rows, width)
+	draw_grid_pygame(win, rows, width)
 	pygame.display.update()
 
 
-def get_clicked_pos(pos, rows, width):
+def get_clicked_pos(pos, rows=ROWS, width=WIDTH):
 	gap = width // rows
 	y, x = pos
 
@@ -208,28 +127,34 @@ def get_clicked_pos(pos, rows, width):
 	return row, col
 
 
-def validate_click(row, col, max_len):
+def validate_click(row, col, max_len=ROWS):
 	return 0 <= row < max_len and 0 <= col < max_len
 
 
-def main(win, width, h=manhattan):
-	ROWS = 50
-	grid = make_grid(ROWS, width)
+def is_terminated():
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.event.post(pygame.event.Event(pygame.QUIT))
+			return True
+
+
+def run_algorithm(algorithm):
+	grid = make_grid()
 
 	start = None
 	end = None
 
 	run = True
 	while run:
-		draw(win, grid, ROWS, width)
+		draw(grid)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				run = False
 
 			if pygame.mouse.get_pressed()[0]: # LEFT
 				pos = pygame.mouse.get_pos()
-				row, col = get_clicked_pos(pos, ROWS, width)
-				if not validate_click(row, col, ROWS):
+				row, col = get_clicked_pos(pos)
+				if not validate_click(row, col):
 					continue
 				spot = grid[row][col]
 				if not start and spot != end:
@@ -245,8 +170,8 @@ def main(win, width, h=manhattan):
 
 			elif pygame.mouse.get_pressed()[2]: # RIGHT
 				pos = pygame.mouse.get_pos()
-				row, col = get_clicked_pos(pos, ROWS, width)
-				if not validate_click(row, col, ROWS):
+				row, col = get_clicked_pos(pos)
+				if not validate_click(row, col):
 					continue
 				spot = grid[row][col]
 				spot.reset()
@@ -268,29 +193,20 @@ def main(win, width, h=manhattan):
 									spot.reset()
 								spot.update_neighbors(grid)
 
-					algorithm(lambda: draw(win, grid, ROWS, width), grid, manhattan, start, end)
-					time.sleep(5)
-					for row in grid:
-						for spot in row:
-							if not spot.is_barrier():
-								if not spot.is_start() and not spot.is_end():
-									spot.reset()
-								spot.update_neighbors(grid)
-
-					algorithm(lambda: draw(win, grid, ROWS, width), grid, euclidean, start, end)
+					algorithm(lambda: draw(grid), grid, start, end)
 
 				if event.key == pygame.K_c:
 					start = None
 					end = None
-					grid = make_grid(ROWS, width)
+					grid = make_grid()
 
-	pygame.quit()
+	# pygame.quit()
 
 
-def run_algo_from_grid(win, grid, h, rows, width, start, end):
+def run_algorithm_from_grid(algorithm, grid, start, end):
 	run = True
 	while run:
-		draw(win, grid, rows, width)
+		draw(grid)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				run = False
@@ -303,33 +219,9 @@ def run_algo_from_grid(win, grid, h, rows, width, start, end):
 								spot.reset()
 							spot.update_neighbors(grid)
 
-				for row in grid:
-					for spot in row:
-						if not spot.is_barrier():
-							if not spot.is_start() and not spot.is_end():
-								spot.reset()
-							spot.update_neighbors(grid)
-				print("manhattan")
 				start_t = time.time()
-				algorithm(lambda: draw(win, grid, rows, width), grid, manhattan, start, end)
+				algorithm(lambda: draw(grid), grid, start, end)
 				end_t = time.time()
 				print("run time: ", end_t - start_t)
-				time.sleep(5)
-				for row in grid:
-					for spot in row:
-						if not spot.is_barrier():
-							if not spot.is_start() and not spot.is_end():
-								spot.reset()
-							spot.update_neighbors(grid)
-				print("euclidian")
-				start_t = time.time()
-				algorithm(lambda: draw(win, grid, rows, width), grid, euclidean, start, end)
-				end_t = time.time()
-				print("run time: ", end_t-start_t)
 
-				# algorithm(lambda: draw(win, grid, rows, width), grid, h, start, end)
-	pygame.quit()
-
-
-if "__main__" == __name__:
-	main(WIN, WIDTH)
+	# pygame.quit()
